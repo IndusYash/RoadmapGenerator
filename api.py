@@ -29,15 +29,11 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Allow local Vite dev server and common production origins
+# Allow all origins for production compatibility
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:3000",
-    ],
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -75,6 +71,17 @@ class GenerateRoadmapRequest(BaseModel):
 # ---------------------------------------------------------------------------
 # Routes
 # ---------------------------------------------------------------------------
+
+
+@app.get("/")
+async def root():
+    """Root endpoint returning service info."""
+    return {
+        "status": "online",
+        "service": "AI Career Roadmap Generator API",
+        "documentation": "/docs",
+        "health_check": "/health"
+    }
 
 
 @app.get("/health")
