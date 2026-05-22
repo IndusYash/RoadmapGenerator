@@ -126,6 +126,13 @@ def generate_roadmap(profile: InputProfile) -> RoadmapResponse:
     # step offsets for salary progression
     salary_steps = [0, 0, 1, 1, 2, 2, 3]
 
+    # Calculate target months distributed across urgency_months
+    urgency = max(1, int(profile.urgency_months))
+    target_months = [max(1, min(urgency, int(round((i + 1) * urgency / 7)))) for i in range(7)]
+
+    # Calculate phases
+    phases = [1, 1, 2, 2, 3, 3, 4]
+
     for i in range(7):
         code = f"M0{i+1}"
         title = _choose_title(profile, i)
@@ -143,9 +150,28 @@ def generate_roadmap(profile: InputProfile) -> RoadmapResponse:
         existing = [m.unlock_statement for m in milestones]
         unlock = generate_unlock_statement(profile, i, existing_statements=existing, language=lang)
 
+        # Calculate new timeline fields
+        target_month = target_months[i]
+        phase = phases[i]
+        if lang == "hi":
+            expected_completion = f"महीने {target_month} के अंत तक"
+        else:
+            expected_completion = f"By the end of Month {target_month}"
+
+        prev_month = 0 if i == 0 else target_months[i - 1]
+        month_diff = target_month - prev_month
+        if month_diff == 0:
+            estimated_duration_weeks = 2
+        else:
+            estimated_duration_weeks = max(1, month_diff * 4)
+
         m = Milestone(
             code=code,
             title=title,
+            phase=phase,
+            target_month=target_month,
+            expected_completion=expected_completion,
+            estimated_duration_weeks=estimated_duration_weeks,
             salary_tier=salary_tier,
             unlock_statement=unlock,
             blur_level=blur,

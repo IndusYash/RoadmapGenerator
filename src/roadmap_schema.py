@@ -16,12 +16,23 @@ BLUR_MAP = {
 class Milestone(BaseModel):
     code: constr(pattern=r"^M0[1-7]$")
     title: constr(min_length=1, max_length=200)
+    phase: conint(ge=1, le=4)
+    target_month: conint(ge=0)
+    expected_completion: constr(min_length=1, max_length=200)
+    estimated_duration_weeks: conint(ge=1)
     salary_tier: constr(min_length=1, max_length=80)
     unlock_statement: constr(min_length=10, max_length=1000)
     blur_level: conint(ge=0, le=3)
     scenario_count: conint(ge=0)
     assessment_count: conint(ge=0)
     mock_interview_count: conint(ge=0)
+
+    @validator("code", pre=True)
+    def normalize_code(cls, v):
+        if isinstance(v, str) and v.startswith("Milestone "):
+            num = v.split()[-1]
+            return f"M0{num}"
+        return v
 
     class Config:
         extra = "forbid"

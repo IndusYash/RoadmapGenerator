@@ -64,7 +64,7 @@ async def run_pipeline(profile_data: Dict[str, Any]) -> Dict[str, Any]:
 
     # If no API key configured, skip model call and use fallback
     if not client.api_key:
-        logger.info("No DEEPSEEK_API_KEY/OPENROUTER_API_KEY configured; using local generator fallback.")
+        logger.info("No model API key configured; using local generator fallback.")
     else:
         try:
             # 4) Call Claude API
@@ -81,12 +81,15 @@ async def run_pipeline(profile_data: Dict[str, Any]) -> Dict[str, Any]:
                 logger.info("Model-generated roadmap validated successfully.")
                 return result.roadmap.model_dump()
             else:
-                logger.warning("Model-generated roadmap failed validation: %s", result.errors)
+                main_cause = f"Schema validation failed: {result.errors}"
+                logger.warning("Pipeline Error: Failed to validate model-generated roadmap. Main Cause: %s. Continuing with fallback generator.", main_cause)
                 # fall through to fallback
         except ClaudeClientError as e:
-            logger.warning("Claude client error: %s", e)
+            main_cause = f"Model API client error ({e})"
+            logger.warning("Pipeline Error: Model call failed. Main Cause: %s. Continuing with fallback generator.", main_cause)
         except Exception as e:
-            logger.exception("Error during model generation/extraction: %s", e)
+            main_cause = f"Unexpected execution or JSON extraction failure ({e})"
+            logger.warning("Pipeline Error: Extraction or orchestration failed. Main Cause: %s. Continuing with fallback generator.", main_cause)
 
     # Fallback deterministic generation
     try:

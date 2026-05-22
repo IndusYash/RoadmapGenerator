@@ -32,6 +32,7 @@ class ClaudeClient:
         model: str = "deepseek/deepseek-v4-flash:free",
         timeout: int = 10,
         max_retries: int = 3,
+        fallback_models: Optional[list] = None,
     ):
         self.api_key = api_key or os.getenv("DEEPSEEK_API_KEY") or os.getenv("OPENROUTER_API_KEY")
         self.api_url = (
@@ -41,6 +42,18 @@ class ClaudeClient:
             or "https://openrouter.ai/api/v1"
         )
         self.model = os.getenv("MODEL_NAME") or model
+        # Default fallback chain: primary model then the provided fallbacks
+        if fallback_models is None:
+            fallback_models = [
+                "openai/gpt-oss-120b:free",
+                "google/gemma-4-26b-a4b-it:free",
+                "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+                "meta-llama/llama-3.3-70b-instruct:free",
+                "qwen/qwen3-next-80b-a3b-instruct:free",
+                "meta-llama/llama-3.2-3b-instruct:free",
+            ]
+        # Ensure primary model is first
+        self.fallback_models = [self.model] + [m for m in fallback_models if m != self.model]
         self.timeout = timeout
         self.max_retries = max_retries
         self.site_url = os.getenv("SITE_URL")
@@ -60,54 +73,72 @@ class ClaudeClient:
 
         This wrapper implements retry/backoff and tolerates several response formats.
         """
-        if not self.api_key:
-            raise ClaudeClientError("Missing DEEPSEEK_API_KEY or OPENROUTER_API_KEY environment variable")
+        # Helper to resolve api key + url for a given model/provider
+        def _resolve_api_info(model_name: str):
+            provider = model_name.split("/")[0].lower()
+            # Map provider -> (env_api_key, env_api_url)
+            mapping = {
+                "deepseek": ("DEEPSEEK_API_KEY", "DEEPSEEK_API_URL"),
+                "openrouter": ("OPENROUTER_API_KEY", "OPENROUTER_API_URL"),
+                "openai": ("OPENAI_API_KEY", "OPENAI_API_URL"),
+                "google": ("GOOGLE_API_KEY", "GOOGLE_API_URL"),
+                "nvidia": ("NVIDIA_API_KEY", "NVIDIA_API_URL"),
+            }
+            key_env, url_env = mapping.get(provider, (None, None))
+            key = os.getenv(key_env) if key_env else None
+            url = os.getenv(url_env) if url_env else None
+            # fallback to client-level values
+            key = key or self.api_key
+            url = url or self.api_url
+            return key, url
 
-        payload = {
-            "model": self.model,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
-            "max_tokens": max_tokens,
-            "temperature": temperature,
-        }
-
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-        }
-        if self.site_url:
-            headers["HTTP-Referer"] = self.site_url
-        if self.site_name:
-            headers["X-Title"] = self.site_name
-
-        base = self.api_url.rstrip("/")
-        if base.endswith("/api/v1"):
-            url = base + "/chat/completions"
-        elif base.endswith("/v1"):
-            url = base + "/chat/completions"
-        else:
-            url = base + "/chat/completions"
-
-        backoff_base = 0.5
+        last_errors = []
 
         async with httpx.AsyncClient(timeout=self.timeout) as client:
-            last_exc = None
-            for attempt in range(1, self.max_retries + 1):
+            # Try each model in the fallback chain once (no per-model retries)
+            for model_try in self.fallback_models:
+                key_try, url_try = _resolve_api_info(model_try)
+                if not key_try:
+                    logger.info("No API key available for model %s; skipping.", model_try)
+                    last_errors.append((model_try, "missing_api_key"))
+                    continue
+
+                payload = {
+                    "model": model_try,
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                    "max_tokens": max_tokens,
+                    "temperature": temperature,
+                }
+
+                headers = {
+                    "Authorization": f"Bearer {key_try}",
+                    "Content-Type": "application/json",
+                }
+                if self.site_url:
+                    headers["HTTP-Referer"] = self.site_url
+                if self.site_name:
+                    headers["X-Title"] = self.site_name
+
+                base = url_try.rstrip("/")
+                url = base + "/chat/completions"
+
                 try:
                     resp = await client.post(url, json=payload, headers=headers)
                     text = await self._extract_text(resp)
+                    if model_try != self.model:
+                        logger.info("Model call succeeded with fallback model %s", model_try)
                     return text
                 except Exception as exc:
-                    last_exc = exc
-                    logger.warning("Model call attempt %s failed: %s", attempt, exc)
-                    if attempt == self.max_retries:
-                        break
-                    sleep_for = backoff_base * (2 ** (attempt - 1))
-                    await asyncio.sleep(sleep_for)
+                    logger.warning("Model %s call failed: %s", model_try, exc)
+                    last_errors.append((model_try, str(exc)))
+                    # move on to next model without retrying
 
-        raise ClaudeClientError(f"Model API call failed after {self.max_retries} attempts: {last_exc}")
+        # If we reach here, all models failed
+        tried = ", ".join([m for m, _ in last_errors])
+        raise ClaudeClientError(f"All model attempts failed ({tried}). Last errors: {last_errors}")
 
     async def _extract_text(self, resp: httpx.Response) -> str:
         status = resp.status_code

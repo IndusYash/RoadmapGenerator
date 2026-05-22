@@ -62,6 +62,10 @@ def build_prompt(profile: InputProfile) -> Tuple[str, str]:
                     {
                         "code": "M01",
                         "title": "Project scaffold",
+                        "phase": 1,
+                        "target_month": 1,
+                        "expected_completion": "By the end of Month 1",
+                        "estimated_duration_weeks": 4,
                         "salary_tier": "entry",
                         "unlock_statement": "You'll demo a simple full-stack app and explain its architecture.",
                         "blur_level": 0,
@@ -79,6 +83,10 @@ def build_prompt(profile: InputProfile) -> Tuple[str, str]:
                     {
                         "code": "M01",
                         "title": "Typing confidence",
+                        "phase": 1,
+                        "target_month": 1,
+                        "expected_completion": "महीने 1 के अंत तक",
+                        "estimated_duration_weeks": 4,
                         "salary_tier": "entry",
                         "unlock_statement": "आप पहले महीने में 40 शब्द/मिनट टाइपिंग की निडरता हासिल करेंगे।",
                         "blur_level": 0,
