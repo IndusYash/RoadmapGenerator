@@ -27,7 +27,7 @@ export const UrgencySlider: React.FC<UrgencySliderProps> = ({
         <label htmlFor={id} className="text-xs font-bold text-white uppercase tracking-wider">
           {label}
         </label>
-        <span className="text-[11px] text-[#3f3f46]">{helper}</span>
+        <span className="text-[11px] text-[#a1a1aa]">{helper}</span>
       </div>
       {/* Notebook margin strip wrapper */}
       <div className="border-l-2 border-l-[#1e3a8a]/50 pl-3">
@@ -50,7 +50,7 @@ export const UrgencySlider: React.FC<UrgencySliderProps> = ({
             {value}mo
           </div>
         </div>
-        <div className="flex justify-between font-mono text-[10px] text-[#3f3f46] mt-1">
+        <div className="flex justify-between font-mono text-[10px] text-[#71717a] mt-1">
           <span>0</span>
           <span>12 months</span>
         </div>

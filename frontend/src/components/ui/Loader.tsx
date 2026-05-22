@@ -29,7 +29,7 @@ export const Loader: React.FC = () => {
           <div className="w-2 h-2 rounded-full bg-[#232323]" />
           <div className="w-2 h-2 rounded-full bg-[#232323]" />
         </div>
-        <span className="text-[11px] text-[#3f3f46] tracking-widest uppercase">AI Pipeline — Running</span>
+        <span className="text-[11px] text-[#71717a] tracking-widest uppercase">AI Pipeline — Running</span>
         <div className="ml-auto flex gap-0.5">
           {[0,1,2].map((i) => (
             <div
@@ -45,7 +45,7 @@ export const Loader: React.FC = () => {
       <div className="space-y-2">
         {steps.map((s, i) => (
           <div key={i} className="flex items-center gap-3">
-            <span className="text-[#3f3f46] text-[11px] w-5 text-right flex-shrink-0">{String(i + 1).padStart(2,'0')}</span>
+            <span className="text-[#52525b] text-[11px] w-5 text-right flex-shrink-0">{String(i + 1).padStart(2,'0')}</span>
             <div className={`flex-1 text-[13px] transition-all duration-200 ${
               i < step ? 'text-[#52525b]' : i === step ? 'text-[#e4e4e7]' : 'text-[#232323]'
             }`}>
@@ -65,7 +65,7 @@ export const Loader: React.FC = () => {
         ))}
       </div>
 
-      <p className="mt-6 pt-4 border-t border-[#1a1a1a] text-[11px] text-[#3f3f46] tracking-wide">
+      <p className="mt-6 pt-4 border-t border-[#1a1a1a] text-[11px] text-[#71717a] tracking-wide">
         AI is building your personalized roadmap — this may take a few seconds
       </p>
     </div>

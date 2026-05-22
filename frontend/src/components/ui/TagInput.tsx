@@ -40,7 +40,7 @@ export const TagInput: React.FC<TagInputProps> = ({
         <label htmlFor={id} className="text-xs font-bold text-white uppercase tracking-wider">
           {label}
         </label>
-        <span className="text-[11px] text-[#3f3f46]">{helper}</span>
+        <span className="text-[11px] text-[#a1a1aa]">{helper}</span>
       </div>
       {/* Notebook margin strip wrapper */}
       <div className="relative border-l-2 border-l-[#1e3a8a]/50 focus-within:border-l-[#3b82f6] transition-colors duration-150">
@@ -69,11 +69,11 @@ export const TagInput: React.FC<TagInputProps> = ({
             onKeyDown={handleKeyDown}
             onBlur={() => input && addTags(input)}
             placeholder={tags.length === 0 ? placeholder : ''}
-            className="flex-1 min-w-[100px] bg-transparent font-mono text-sm text-[#e4e4e7] placeholder-[#3f3f46] outline-none"
+            className="flex-1 min-w-[100px] bg-transparent font-mono text-sm text-[#e4e4e7] placeholder-[#52525b] outline-none"
           />
         </div>
       </div>
-      <p className="text-[11px] text-[#3f3f46] font-mono">Enter or , to add · Backspace to remove</p>
+      <p className="text-[11px] text-[#71717a] font-mono">Enter or , to add · Backspace to remove</p>
     </div>
   );
 };

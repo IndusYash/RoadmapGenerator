@@ -23,7 +23,7 @@ export const SelectField: React.FC<SelectFieldProps> = ({
         <label htmlFor={id} className="text-xs font-bold text-white uppercase tracking-wider">
           {label}
         </label>
-        <span className="text-[11px] text-[#3f3f46]">{helper}</span>
+        <span className="text-[11px] text-[#a1a1aa]">{helper}</span>
       </div>
       {/* Notebook margin strip wrapper */}
       <div className="relative border-l-2 border-l-[#1e3a8a]/50 focus-within:border-l-[#3b82f6] transition-colors duration-150">
