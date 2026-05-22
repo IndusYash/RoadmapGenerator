@@ -21,6 +21,14 @@ export const HomePage: React.FC = () => {
   const { form, updateField, loading, roadmap, error, submit, reset } = useRoadmap();
 
   React.useEffect(() => {
+    if (loading) {
+      setTimeout(() => {
+        document.getElementById('output-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 50);
+    }
+  }, [loading]);
+
+  React.useEffect(() => {
     if (roadmap) {
       setTimeout(() => {
         document.getElementById('roadmap-output')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -171,7 +179,7 @@ export const HomePage: React.FC = () => {
           </div>
 
           {/* ── RIGHT: OUTPUT PANEL ─────────────────────── */}
-          <div className="min-h-[300px]">
+          <div id="output-panel" className="min-h-[300px]">
             {!loading && !roadmap && (
               <div className="border border-[#1a1a1a] bg-[#0a0a0a] h-full min-h-[500px] flex flex-col items-center justify-center gap-4 text-center px-8">
                 {/* Diagram placeholder */}
