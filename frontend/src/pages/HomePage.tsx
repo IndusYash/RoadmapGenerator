@@ -229,7 +229,6 @@ export const HomePage: React.FC = () => {
       <div className="border-t border-[#1a1a1a] mt-8">
         <div className="max-w-8xl mx-auto px-6 py-4 flex items-center justify-between">
           <span className="font-mono text-[11px] text-[#71717a]">roadmap.ai · Career Intelligence Platform</span>
-          <span className="font-mono text-[11px] text-[#71717a]">Built with Claude AI</span>
         </div>
       </div>
     </div>
